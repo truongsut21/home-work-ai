@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
 import Sidebar from './sidebar';
 
 const { Content } = Layout;
@@ -15,13 +16,31 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Close mobile menu when switching to desktop
+  useEffect(() => {
+    if (!isMobile) setMobileMenuOpen(false);
+  }, [isMobile]);
 
   const handleNewConversation = () => {
     setActiveConversationId(null);
+    setMobileMenuOpen(false);
   };
 
   const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
+    setMobileMenuOpen(false);
   };
 
   const handleConversationCreated = (id: string) => {
@@ -34,10 +53,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
         activeConversationId={activeConversationId}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
+        isMobile={isMobile}
+        mobileMenuOpen={mobileMenuOpen}
+        onCloseMobileMenu={() => setMobileMenuOpen(false)}
       />
       <Layout
         style={{
-          marginLeft: 280,
+          marginLeft: isMobile ? 0 : 280,
           transition: 'margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
           background: 'var(--bg-primary)',
         }}
@@ -85,15 +107,40 @@ export default function MainLayout({ children }: MainLayoutProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '10px 24px',
+              padding: isMobile ? '10px 12px' : '10px 24px',
               borderBottom: '1px solid var(--border-light)',
               zIndex: 10,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Mobile hamburger button */}
+              {isMobile && (
+                <button
+                  id="mobile-menu-toggle"
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="mobile-menu-btn"
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 12,
+                    border: '1px solid var(--border-light)',
+                    background: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 18,
+                    transition: 'all 0.2s ease',
+                    flexShrink: 0,
+                  }}
+                >
+                  <MenuOutlined />
+                </button>
+              )}
               <span
                 style={{
-                  fontSize: 16,
+                  fontSize: isMobile ? 14 : 16,
                   fontWeight: 700,
                   color: 'var(--text-primary)',
                 }}
@@ -115,32 +162,37 @@ export default function MainLayout({ children }: MainLayoutProps) {
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button
-                className="action-pill"
-                style={{
-                  fontSize: 12,
-                  padding: '6px 14px',
-                  gap: 6,
-                }}
-              >
-                ⚙️ Configuration
-              </button>
-              <button
-                className="action-pill"
-                style={{
-                  fontSize: 12,
-                  padding: '6px 14px',
-                  gap: 6,
-                }}
-              >
-                📤 Share
-              </button>
+              {/* Hide action pills on mobile, only show New Chat */}
+              {!isMobile && (
+                <>
+                  <button
+                    className="action-pill"
+                    style={{
+                      fontSize: 12,
+                      padding: '6px 14px',
+                      gap: 6,
+                    }}
+                  >
+                    ⚙️ Configuration
+                  </button>
+                  <button
+                    className="action-pill"
+                    style={{
+                      fontSize: 12,
+                      padding: '6px 14px',
+                      gap: 6,
+                    }}
+                  >
+                    📤 Share
+                  </button>
+                </>
+              )}
               <button
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
-                  padding: '8px 18px',
+                  padding: isMobile ? '8px 14px' : '8px 18px',
                   borderRadius: 'var(--radius-full)',
                   border: 'none',
                   background: 'var(--accent-gradient)',
