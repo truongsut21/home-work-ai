@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Typography, Avatar, Tooltip } from 'antd';
 import { UserOutlined, RobotOutlined, CopyOutlined, CheckOutlined, LikeOutlined, DislikeOutlined } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
 
 const { Text } = Typography;
 
@@ -69,7 +70,7 @@ export default function MessageBubble({ role, content, index = 0 }: MessageBubbl
       )}
 
       {/* Message content */}
-      <div style={{ maxWidth: '70%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ maxWidth: '70%', display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
         <div
           style={{
             padding: '16px 22px',
@@ -107,30 +108,45 @@ export default function MessageBubble({ role, content, index = 0 }: MessageBubbl
               }}
             />
           )}
-          <Text
-            style={{
-              color: isUser ? '#FFFFFF' : 'var(--text-primary)',
-              whiteSpace: 'pre-wrap',
-              position: 'relative',
-              zIndex: 1,
-            }}
-          >
-            {content}
-          </Text>
+          {isUser ? (
+            <Text
+              style={{
+                color: '#FFFFFF',
+                whiteSpace: 'pre-wrap',
+                position: 'relative',
+                zIndex: 1,
+              }}
+            >
+              {content}
+            </Text>
+          ) : (
+            <div
+              className="markdown-content"
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                color: 'var(--text-primary)',
+              }}
+            >
+              <ReactMarkdown>{content}</ReactMarkdown>
+            </div>
+          )}
         </div>
 
-        {/* Action buttons (visible on hover) */}
-        {isHovered && (
-          <div
-            style={{
-              display: 'flex',
-              gap: 4,
-              alignSelf: isUser ? 'flex-end' : 'flex-start',
-              animation: 'fadeIn 0.2s ease-out',
-              paddingLeft: isUser ? 0 : 4,
-              paddingRight: isUser ? 4 : 0,
-            }}
-          >
+        {/* Action buttons (absolutely positioned, no layout shift) */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 4,
+            alignSelf: isUser ? 'flex-end' : 'flex-start',
+            paddingLeft: isUser ? 0 : 4,
+            paddingRight: isUser ? 4 : 0,
+            opacity: isHovered ? 1 : 0,
+            pointerEvents: isHovered ? 'auto' : 'none',
+            transition: 'opacity 0.2s ease-out',
+            height: 28,
+          }}
+        >
             <Tooltip title={copied ? 'Đã copy!' : 'Copy'}>
               <button
                 onClick={handleCopy}
@@ -213,7 +229,6 @@ export default function MessageBubble({ role, content, index = 0 }: MessageBubbl
               </>
             )}
           </div>
-        )}
       </div>
 
       {/* User avatar */}

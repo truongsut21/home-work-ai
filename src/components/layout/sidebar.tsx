@@ -12,7 +12,6 @@ import {
   SettingOutlined,
   CalendarOutlined,
   AppstoreOutlined,
-  StarOutlined,
   EllipsisOutlined,
 } from '@ant-design/icons';
 
@@ -80,25 +79,7 @@ export default function Sidebar({
     { icon: <BookOutlined />, label: 'Ghi chú' },
   ];
 
-  // Group conversations by date
-  const groupConversations = () => {
-    const today = new Date();
-    const saved: Conversation[] = [];
-    const todayList: Conversation[] = [];
-    const older: Conversation[] = [];
 
-    conversations.forEach((conv) => {
-      const convDate = new Date(conv.createdAt);
-      const diffDays = Math.floor((today.getTime() - convDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays === 0) todayList.push(conv);
-      else if (diffDays <= 7) saved.push(conv);
-      else older.push(conv);
-    });
-
-    return { saved, todayList, older };
-  };
-
-  const { saved, todayList, older } = groupConversations();
 
   const renderConversationItem = (conv: Conversation, index: number) => {
     const isActive = activeConversationId === conv.id;
@@ -240,42 +221,7 @@ export default function Sidebar({
     );
   };
 
-  const renderGroup = (label: string, items: Conversation[]) => {
-    if (items.length === 0) return null;
-    return (
-      <div style={{ marginBottom: 16 }}>
-        {!collapsed && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '4px 12px',
-              marginBottom: 4,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 11.5,
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.8px',
-                fontWeight: 600,
-              }}
-            >
-              {label}
-            </Text>
-            {label === 'Saved' && (
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer' }}>
-                ▾
-              </span>
-            )}
-          </div>
-        )}
-        {items.map((conv, i) => renderConversationItem(conv, i))}
-      </div>
-    );
-  };
+
 
   return (
     <Sider
@@ -505,7 +451,6 @@ export default function Sidebar({
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 New Chat
-                <StarOutlined style={{ fontSize: 12, opacity: 0.7 }} />
               </span>
             </Button>
 
@@ -518,9 +463,7 @@ export default function Sidebar({
                 paddingRight: 2,
               }}
             >
-              {renderGroup('☆ Saved', saved.length > 0 ? saved : conversations.slice(0, 3))}
-              {renderGroup('Today', todayList)}
-              {renderGroup('Earlier', older)}
+              {conversations.map((conv, i) => renderConversationItem(conv, i))}
             </div>
           </div>
         )}

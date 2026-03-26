@@ -35,39 +35,39 @@ function WelcomeScreen() {
     setMounted(true);
   }, []);
 
-  // Feature cards similar to Orbita GPT
+  // Feature cards for English learning
   const assistantCards = [
     {
-      name: 'Sam Lee',
-      tag: 'Data Assistant',
+      name: 'Ms. Quynh',
+      tag: 'English Teacher',
       tagColor: '#3B5BFE',
       tagBg: '#EEF1FF',
-      desc: 'Designed to help manage sales processes and maximize customer engagement.',
+      desc: 'Giúp bạn luyện tiếng Anh qua hội thoại, sửa lỗi ngữ pháp và mở rộng vốn từ vựng một cách vui vẻ.',
       bgGradient: 'linear-gradient(145deg, #1A1D2E 0%, #2D3148 100%)',
       textColor: '#FFFFFF',
     },
     {
       items: [
-        { icon: <BookOutlined style={{ color: '#3B5BFE' }} />, text: 'Answer RFP documentation' },
-        { icon: <ExperimentOutlined style={{ color: '#8B5CF6' }} />, text: 'Conduct a competitor analysis' },
-        { icon: <EditOutlined style={{ color: '#10B981' }} />, text: 'Provide feedback on communication' },
+        { icon: <BookOutlined style={{ color: '#3B5BFE' }} />, text: 'Luyện hội thoại tiếng Anh' },
+        { icon: <ExperimentOutlined style={{ color: '#8B5CF6' }} />, text: 'Kiểm tra ngữ pháp' },
+        { icon: <EditOutlined style={{ color: '#10B981' }} />, text: 'Dịch và giải thích câu' },
       ],
-      footer: 'Tasks',
-      footerLink: 'View All',
+      footer: 'Bài tập',
+      footerLink: 'Xem thêm',
     },
     {
-      question: 'What are the key benefits of Product 1 that I should highlight to potential clients?',
-      label: 'Suggested prompt',
+      question: 'Hãy giải thích sự khác nhau giữa "present perfect" và "past simple" cho mình nhé?',
+      label: 'Gợi ý câu hỏi',
       icon: <BulbOutlined style={{ color: '#F59E0B' }} />,
     },
   ];
 
   // Quick action pills
   const quickActions = [
-    { icon: <CalendarOutlined style={{ color: '#EF4444' }} />, label: 'Connect Calendar', color: '#FEF2F2' },
-    { icon: <ExperimentOutlined style={{ color: '#10B981' }} />, label: 'Demo Task', color: '#ECFDF5' },
-    { icon: <AppstoreOutlined style={{ color: '#8B5CF6' }} />, label: 'Browse Integrations', color: '#F3EEFF' },
-    { icon: <EditOutlined style={{ color: '#F59E0B' }} />, label: 'Shared in Notes', color: '#FFFBEB' },
+    { icon: <CalendarOutlined style={{ color: '#EF4444' }} />, label: 'Luyện phát âm', color: '#FEF2F2' },
+    { icon: <ExperimentOutlined style={{ color: '#10B981' }} />, label: 'Học từ vựng', color: '#ECFDF5' },
+    { icon: <AppstoreOutlined style={{ color: '#8B5CF6' }} />, label: 'Ngữ pháp', color: '#F3EEFF' },
+    { icon: <EditOutlined style={{ color: '#F59E0B' }} />, label: 'Viết luận', color: '#FFFBEB' },
   ];
 
   return (
@@ -142,7 +142,7 @@ function WelcomeScreen() {
           color: 'var(--text-primary)',
         }}
       >
-        Hi, there 👋
+        Chào bạn! 👋
       </Title>
       <Text
         className="fade-in-up fade-in-up-delay-2"
@@ -155,7 +155,7 @@ function WelcomeScreen() {
           lineHeight: 1.6,
         }}
       >
-        Tell us what you need, and we&apos;ll handle the rest.
+        Cùng Ms. Quynh luyện tiếng Anh mỗi ngày nhé!
       </Text>
 
       {/* Feature Cards Row */}
@@ -439,6 +439,7 @@ export default function ChatWindow({ messages, isLoading }: ChatWindowProps) {
         maxWidth: 900,
         margin: '0 auto',
         width: '100%',
+        minHeight: 0,
       }}
     >
       {messages.map((msg, index) => (
@@ -489,7 +490,7 @@ export default function ChatWindow({ messages, isLoading }: ChatWindowProps) {
               <span />
             </div>
             <Text style={{ color: 'var(--text-muted)', fontSize: 13, fontWeight: 500 }}>
-              Cô Minh đang suy nghĩ...
+              Ms. Quynh đang suy nghĩ...
             </Text>
           </div>
         </div>

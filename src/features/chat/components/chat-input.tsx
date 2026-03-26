@@ -39,12 +39,12 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
 
   return (
     <div
-      className="fade-in-up fade-in-up-delay-7"
       style={{
         padding: '12px 24px 24px',
-        background: 'linear-gradient(180deg, transparent 0%, var(--bg-primary) 30%)',
+        background: 'var(--bg-primary)',
         position: 'relative',
         zIndex: 5,
+        flexShrink: 0,
       }}
     >
       <div

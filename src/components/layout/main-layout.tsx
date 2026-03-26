@@ -166,7 +166,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </div>
 
           {/* Main content */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
             {children({
               activeConversationId,
               onConversationCreated: handleConversationCreated,
