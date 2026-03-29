@@ -117,7 +117,7 @@ export default function DictionaryResultCard({ result }: DictionaryResultCardPro
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <MessageOutlined style={{ color: '#8B5CF6', fontSize: 15 }} />
-          <Text style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>Câu ví dụ nhây bựa của Cô Lành</Text>
+          <Text style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>Câu ví dụ vui của Cô Lành</Text>
         </div>
         <div style={{ padding: '16px 20px' }}>
           <div style={{
