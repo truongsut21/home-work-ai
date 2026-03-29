@@ -10,14 +10,17 @@ const { Content } = Layout;
 interface MainLayoutProps {
   children: (props: {
     activeConversationId: string | null;
-    onConversationCreated: (id: string) => void;
+    onConversationCreated: (id: string, title?: string) => void;
   }) => React.ReactNode;
+  initialConversationId?: string | null;
 }
 
-export default function MainLayout({ children }: MainLayoutProps) {
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+export default function MainLayout({ children, initialConversationId }: MainLayoutProps) {
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(initialConversationId ?? null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [newConversation, setNewConversation] = useState<any>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -43,14 +46,26 @@ export default function MainLayout({ children }: MainLayoutProps) {
     setMobileMenuOpen(false);
   };
 
-  const handleConversationCreated = (id: string) => {
+  const handleConversationCreated = (id: string, title?: string) => {
     setActiveConversationId(id);
+    if (title) {
+      setNewConversation({
+        id,
+        title,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    } else {
+      setRefreshKey((prev) => prev + 1);
+    }
   };
 
   return (
     <Layout style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       <Sidebar
         activeConversationId={activeConversationId}
+        refreshKey={refreshKey}
+        newConversation={newConversation}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
         isMobile={isMobile}
@@ -188,6 +203,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </>
               )}
               <button
+                onClick={handleNewConversation}
                 style={{
                   display: 'flex',
                   alignItems: 'center',

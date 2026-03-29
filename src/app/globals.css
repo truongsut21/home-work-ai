@@ -242,6 +242,28 @@ body {
   }
 }
 
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
 @keyframes wiggle {
 
   0%,
@@ -342,6 +364,16 @@ body {
 .slide-up {
   animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   opacity: 0;
+}
+
+/* Simple opacity fade-in — no transform (avoids hydration issues) */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* Dictionary skeleton loading hint pulse */
+.dict-loading-hint {
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 .fade-in-up-delay-1 {

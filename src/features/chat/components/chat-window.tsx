@@ -116,7 +116,7 @@ function WelcomeScreen() {
           position: 'relative',
         }}
       >
-        <RobotOutlined style={{ fontSize: 36, color: '#fff' }} />
+        <span style={{ fontSize: 40, lineHeight: 1 }}>👩‍💻</span>
         {/* Pulse ring */}
         <div
           style={{
@@ -469,7 +469,7 @@ export default function ChatWindow({ messages, isLoading }: ChatWindowProps) {
               animation: 'breathe 2s ease-in-out infinite',
             }}
           >
-            <RobotOutlined style={{ color: '#fff', fontSize: 18 }} />
+            <span style={{ fontSize: 20, lineHeight: 1 }}>👩‍💻</span>
           </div>
           <div
             style={{

@@ -3,15 +3,16 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useEffect, useCallback, useRef } from 'react';
-import { MAX_CONTEXT_MESSAGES } from '../constants/system-prompt';
 
 interface UseChatMessagesOptions {
   conversationId: string | null;
-  onConversationCreated: (id: string) => void;
+  onConversationCreated: (id: string, title?: string) => void;
 }
 
 export function useChatMessages({ conversationId, onConversationCreated }: UseChatMessagesOptions) {
   const conversationIdRef = useRef(conversationId);
+  const isCreatingChatRef = useRef(false);
+  const creationPromiseRef = useRef<Promise<string> | null>(null);
 
   useEffect(() => {
     conversationIdRef.current = conversationId;
@@ -29,33 +30,6 @@ export function useChatMessages({ conversationId, onConversationCreated }: UseCh
         conversationId: conversationIdRef.current,
       }),
     }),
-    onFinish: async ({ message }) => {
-      // Save assistant message to DB
-      const convId = conversationIdRef.current;
-      if (convId) {
-        // Extract text from message parts
-        const textContent = message.parts
-          ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text')
-          .map((p) => p.text)
-          .join('') || '';
-
-        if (textContent) {
-          try {
-            await fetch('/api/messages', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                conversationId: convId,
-                role: 'assistant',
-                content: textContent,
-              }),
-            });
-          } catch (error) {
-            console.error('Failed to save assistant message:', error);
-          }
-        }
-      }
-    },
   });
 
   const isLoading = status === 'submitted' || status === 'streaming';
@@ -63,6 +37,12 @@ export function useChatMessages({ conversationId, onConversationCreated }: UseCh
   // Load messages when conversation changes
   useEffect(() => {
     if (conversationId) {
+      if (isCreatingChatRef.current) {
+        // Just created this chat via input, skip fetching from DB
+        // to avoid overwriting currently streaming messages
+        isCreatingChatRef.current = false;
+        return;
+      }
       loadMessages(conversationId);
     } else {
       setMessages([]);
@@ -93,39 +73,39 @@ export function useChatMessages({ conversationId, onConversationCreated }: UseCh
 
       // Create conversation if needed
       if (!convId) {
-        try {
-          const res = await fetch('/api/conversations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              title: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-            }),
-          });
-          if (res.ok) {
-            const conv = await res.json();
-            convId = conv.id;
-            conversationIdRef.current = convId;
-            onConversationCreated(conv.id);
-          }
-        } catch (error) {
-          console.error('Failed to create conversation:', error);
-          return;
-        }
-      }
+        if (creationPromiseRef.current) {
+          // Tránh gọi song song (Race condition) nếu đang tạo phòng chat
+          convId = await creationPromiseRef.current;
+        } else {
+          try {
+            isCreatingChatRef.current = true;
+            creationPromiseRef.current = fetch('/api/conversations', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
+              }),
+            })
+              .then((res) => {
+                if (!res.ok) throw new Error('Failed');
+                return res.json();
+              })
+              .then((conv) => {
+                const newId = conv.id;
+                conversationIdRef.current = newId;
+                onConversationCreated(newId, conv.title || content.substring(0, 50));
+                return newId;
+              });
 
-      // Save user message to DB
-      try {
-        await fetch('/api/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            conversationId: convId,
-            role: 'user',
-            content,
-          }),
-        });
-      } catch (error) {
-        console.error('Failed to save user message:', error);
+            convId = await creationPromiseRef.current;
+          } catch (error) {
+            console.error('Failed to create conversation:', error);
+            isCreatingChatRef.current = false;
+            return;
+          } finally {
+            creationPromiseRef.current = null;
+          }
+        }
       }
 
       // Send to AI

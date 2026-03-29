@@ -42,7 +42,7 @@ export default function MessageBubble({ role, content, index = 0 }: MessageBubbl
         <div style={{ position: 'relative' }}>
           <Avatar
             size={40}
-            icon={<RobotOutlined />}
+            icon={<span style={{ fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👩‍💻</span>}
             style={{
               background: 'linear-gradient(145deg, #6B8AFF, #3B5BFE)',
               flexShrink: 0,
@@ -235,7 +235,7 @@ export default function MessageBubble({ role, content, index = 0 }: MessageBubbl
       {isUser && (
         <Avatar
           size={40}
-          icon={<UserOutlined />}
+          icon={<span style={{ fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🤦‍♂️</span>}
           style={{
             background: 'linear-gradient(145deg, #10B981, #34D399)',
             flexShrink: 0,

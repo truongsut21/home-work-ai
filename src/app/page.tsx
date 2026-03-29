@@ -1,5 +1,7 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import ChatWindow from '@/features/chat/components/chat-window';
 import ChatInput from '@/features/chat/components/chat-input';
@@ -10,7 +12,7 @@ function ChatPage({
   onConversationCreated,
 }: {
   activeConversationId: string | null;
-  onConversationCreated: (id: string) => void;
+  onConversationCreated: (id: string, title?: string) => void;
 }) {
   const { messages, isLoading, sendMessage } = useChatMessages({
     conversationId: activeConversationId,
@@ -32,9 +34,13 @@ function ChatPage({
   );
 }
 
-export default function Home() {
+// Reads ?c= from URL and injects into MainLayout's active conversation
+function HomeInner() {
+  const searchParams = useSearchParams();
+  const conversationIdFromUrl = searchParams.get('c');
+
   return (
-    <MainLayout>
+    <MainLayout initialConversationId={conversationIdFromUrl}>
       {({ activeConversationId, onConversationCreated }) => (
         <ChatPage
           activeConversationId={activeConversationId}
@@ -42,5 +48,13 @@ export default function Home() {
         />
       )}
     </MainLayout>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeInner />
+    </Suspense>
   );
 }

@@ -15,6 +15,7 @@ import {
   EllipsisOutlined,
   CloseOutlined,
 } from '@ant-design/icons';
+import { useRouter, usePathname } from 'next/navigation';
 
 const { Sider } = Layout;
 const { Text } = Typography;
@@ -33,6 +34,10 @@ interface SidebarProps {
   isMobile?: boolean;
   mobileMenuOpen?: boolean;
   onCloseMobileMenu?: () => void;
+  refreshKey?: number;
+  newConversation?: any;
+  /** When false, hides conversation panel (New Chat + history). Icon strip only. */
+  showPanel?: boolean;
 }
 
 export default function Sidebar({
@@ -42,6 +47,9 @@ export default function Sidebar({
   isMobile = false,
   mobileMenuOpen = false,
   onCloseMobileMenu,
+  refreshKey = 0,
+  newConversation,
+  showPanel = true,
 }: SidebarProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [collapsed, setCollapsed] = useState(false);
@@ -62,7 +70,18 @@ export default function Sidebar({
 
   useEffect(() => {
     fetchConversations();
-  }, [activeConversationId]);
+  }, [refreshKey]);
+
+  useEffect(() => {
+    if (newConversation) {
+      setConversations((prev) => {
+        if (!prev.find((c) => c.id === newConversation.id)) {
+          return [newConversation, ...prev];
+        }
+        return prev;
+      });
+    }
+  }, [newConversation]);
 
   const handleDelete = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -89,14 +108,20 @@ export default function Sidebar({
     };
   }, [isMobile, mobileMenuOpen]);
 
-  // Navigation icons (like Orbita GPT sidebar)
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Navigation icons with routes
   const navIcons = [
-    { icon: <MessageOutlined />, label: 'Chat' },
-    { icon: <ThunderboltOutlined />, label: 'Nhanh' },
-    { icon: <AppstoreOutlined />, label: 'Ứng dụng' },
-    { icon: <CalendarOutlined />, label: 'Lịch' },
-    { icon: <BookOutlined />, label: 'Ghi chú' },
+    { icon: <MessageOutlined />, label: 'Chat', route: '/' },
+    { icon: <BookOutlined />, label: 'Từ điển Cô Lành', route: '/tu-dien' },
   ];
+
+  const getNavActive = (route: string | null) => {
+    if (!route) return false;
+    if (route === '/') return pathname === '/';
+    return pathname.startsWith(route);
+  };
 
   const renderConversationItem = (conv: Conversation, index: number) => {
     const isActive = activeConversationId === conv.id;
@@ -263,7 +288,7 @@ export default function Sidebar({
                   boxShadow: 'var(--shadow-accent)',
                 }}
               >
-                <BookOutlined style={{ fontSize: 18, color: '#FFFFFF' }} />
+                <span style={{ fontSize: 18 }}>👩‍💻</span>
               </div>
               <div>
                 <div
@@ -301,8 +326,11 @@ export default function Sidebar({
             {navIcons.map((nav, i) => (
               <button
                 key={i}
-                className={`mobile-nav-item ${activeNav === i ? 'active' : ''}`}
-                onClick={() => setActiveNav(i)}
+                className={`mobile-nav-item ${getNavActive(nav.route) ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveNav(i);
+                  if (nav.route) { router.push(nav.route); onCloseMobileMenu?.(); }
+                }}
               >
                 <span className="mobile-nav-icon">{nav.icon}</span>
                 <span className="mobile-nav-label">{nav.label}</span>
@@ -310,69 +338,73 @@ export default function Sidebar({
             ))}
           </div>
 
-          {/* New Chat Button */}
-          <div style={{ padding: '0 16px', marginBottom: 8 }}>
-            <Button
-              type="primary"
-              onClick={onNewConversation}
-              block
-              icon={<PlusOutlined />}
-              style={{
-                height: 48,
-                borderRadius: 'var(--radius-full)',
-                background: 'var(--accent-gradient)',
-                border: 'none',
-                fontWeight: 600,
-                fontSize: 14,
-                boxShadow: 'var(--shadow-accent)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-              }}
-            >
-              Cuộc trò chuyện mới
-            </Button>
-          </div>
-
-          {/* Section title */}
-          <div
-            style={{
-              padding: '12px 20px 6px',
-              fontSize: 12,
-              fontWeight: 600,
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            Lịch sử trò chuyện
-          </div>
-
-          {/* Conversation List */}
-          <div className="mobile-conversation-list">
-            {conversations.length === 0 ? (
-              <div
+          {/* New Chat Button — chat page only */}
+          {showPanel && (
+            <div style={{ padding: '0 16px', marginBottom: 8 }}>
+              <Button
+                type="primary"
+                onClick={onNewConversation}
+                block
+                icon={<PlusOutlined />}
                 style={{
+                  height: 48,
+                  borderRadius: 'var(--radius-full)',
+                  background: 'var(--accent-gradient)',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  boxShadow: 'var(--shadow-accent)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '40px 20px',
-                  color: 'var(--text-muted)',
                   gap: 8,
                 }}
               >
-                <MessageOutlined style={{ fontSize: 32, opacity: 0.4 }} />
-                <span style={{ fontSize: 13, fontWeight: 500 }}>
-                  Chưa có cuộc trò chuyện nào
-                </span>
+                Cuộc trò chuyện mới
+              </Button>
+            </div>
+          )}
+
+          {/* Conversation history — chat page only */}
+          {showPanel && (
+            <>
+              <div
+                style={{
+                  padding: '12px 20px 6px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Lịch sử trò chuyện
               </div>
-            ) : (
-              conversations.map((conv, i) => renderConversationItem(conv, i))
-            )}
-          </div>
+              <div className="mobile-conversation-list">
+                {conversations.length === 0 ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '40px 20px',
+                      color: 'var(--text-muted)',
+                      gap: 8,
+                    }}
+                  >
+                    <MessageOutlined style={{ fontSize: 32, opacity: 0.4 }} />
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>
+                      Chưa có cuộc trò chuyện nào
+                    </span>
+                  </div>
+                ) : (
+                  conversations.map((conv, i) => renderConversationItem(conv, i))
+                )}
+              </div>
+            </>
+          )}
 
           {/* Bottom actions */}
           <div className="mobile-sidebar-footer">
@@ -400,7 +432,7 @@ export default function Sidebar({
                 flexShrink: 0,
               }}
             >
-              S
+              <span style={{ fontSize: 18 }}>🤦‍♂️</span>
             </div>
           </div>
         </div>
@@ -408,46 +440,41 @@ export default function Sidebar({
     );
   }
 
-  // ============ DESKTOP RENDER (unchanged) ============
+  // ============ DESKTOP RENDER ============
   return (
-    <Sider
-      collapsible
-      collapsed={collapsed}
-      onCollapse={setCollapsed}
-      width={280}
-      collapsedWidth={68}
-      trigger={null}
-      style={{
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        background: 'var(--bg-sidebar)',
-        borderRight: '1px solid var(--border)',
-        zIndex: 100,
-        overflow: 'hidden',
-      }}
-    >
-      <div
+      <Sider
+        collapsible
+        collapsed={collapsed || !showPanel}
+        onCollapse={(c) => { if (showPanel) setCollapsed(c); }}
+        width={280}
+        collapsedWidth={60}
+        trigger={null}
         style={{
-          display: 'flex',
-          height: '100%',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          background: 'var(--bg-sidebar)',
+          borderRight: '1px solid var(--border)',
+          zIndex: 100,
+          overflow: 'hidden',
         }}
       >
-        {/* Left icon strip (Orbita GPT style) */}
-        <div
-          style={{
-            width: 60,
-            background: 'var(--bg-primary)',
-            borderRight: '1px solid var(--border-light)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '16px 0',
-            gap: 4,
-          }}
-        >
+        <div style={{ display: 'flex', height: '100%' }}>
+          {/* Left icon strip */}
+          <div
+            style={{
+              width: 60,
+              background: 'var(--bg-primary)',
+              borderRight: showPanel ? '1px solid var(--border-light)' : 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: '16px 0',
+              gap: 4,
+            }}
+          >
           {/* Logo */}
           <div
             className="bounce-in"
@@ -472,7 +499,7 @@ export default function Sidebar({
               e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
             }}
           >
-            <BookOutlined style={{ fontSize: 20, color: '#FFFFFF' }} />
+            <span style={{ fontSize: 20 }}>👩‍💻</span>
             {/* Online dot */}
             <div
               style={{
@@ -492,13 +519,31 @@ export default function Sidebar({
           {navIcons.map((nav, i) => (
             <Tooltip key={i} title={nav.label} placement="right">
               <button
-                className={`nav-icon-btn ${activeNav === i ? 'active' : ''}`}
-                onClick={() => setActiveNav(i)}
+                className={`nav-icon-btn ${getNavActive(nav.route) ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveNav(i);
+                  if (nav.route) router.push(nav.route);
+                }}
                 style={{
                   animationDelay: `${i * 0.08}s`,
+                  position: 'relative',
                 }}
               >
                 {nav.icon}
+                {nav.route === '/tu-dien' && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 4,
+                      right: 4,
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: '#10B981',
+                      border: '1.5px solid var(--bg-primary)',
+                    }}
+                  />
+                )}
               </button>
             </Tooltip>
           ))}
@@ -541,23 +586,23 @@ export default function Sidebar({
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              S
+              <span style={{ fontSize: 18 }}>🤦‍♂️</span>
             </div>
           </div>
         </div>
 
-        {/* Right conversation panel */}
-        {!collapsed && (
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              padding: '16px 8px',
-              animation: 'slideInLeft 0.3s ease',
-              overflow: 'hidden',
-            }}
-          >
+          {/* Right conversation panel — only when showPanel=true */}
+          {showPanel && !collapsed && (
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '16px 8px',
+                animation: 'slideInLeft 0.3s ease',
+                overflow: 'hidden',
+              }}
+            >
             {/* Header */}
             <div
               style={{
