@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMessages } from '@/features/chat/services/get-messages';
 import { saveMessage } from '@/features/chat/services/save-message';
+import { verifyApiAuth } from '@/lib/auth-server';
 
 export async function GET(req: NextRequest) {
+  const authPayload = verifyApiAuth(req);
+  if (!authPayload) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const conversationId = req.nextUrl.searchParams.get('conversationId');
   if (!conversationId) {
     return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
@@ -18,6 +24,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authPayload = verifyApiAuth(req);
+  if (!authPayload) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { conversationId, role, content } = await req.json();
     if (!conversationId || !role || !content) {

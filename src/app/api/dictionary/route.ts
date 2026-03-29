@@ -1,9 +1,15 @@
 import { generateObject } from 'ai';
 import { chatModel } from '@/lib/ai';
+import { verifyApiAuth } from '@/lib/auth-server';
 import { DictionarySchema } from '@/features/dictionary/schemas/dictionary.schema';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
+  const authPayload = verifyApiAuth(req);
+  if (!authPayload) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { word } = await req.json();
 

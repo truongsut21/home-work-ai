@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-
-function createMockJwt(payload: any) {
-  const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${base64Payload}.mock_signature_123`;
-}
+import { signJwt, verifyJwt } from '@/lib/jwt';
 
 export async function POST(req: Request) {
   try {
@@ -14,21 +10,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Missing Token' }, { status: 401 });
     }
 
-    const now = Math.floor(Date.now() / 1000);
+    // 💡 Bước cực kỳ quan trọng: Bắt buộc Verify Refresh Token xịn
+    const verified = await verifyJwt(refreshToken);
+    if (!verified || verified.type !== 'refresh') {
+      return NextResponse.json({ message: 'Invalid or Expired Refresh Token' }, { status: 401 });
+    }
     
     // Tạo cặp token mới
-    const newAccessToken = createMockJwt({
-      id: 'user_123',
-      email: 'admin@admin.com',
-      name: 'Admin User',
-      exp: now + 30 * 60, // 30 mins
-    });
+    const newAccessToken = await signJwt({
+      id: verified.id,
+      email: verified.email || 'admin@admin.com',
+      name: verified.name || 'Admin User',
+    }, '30m');
 
-    const newRefreshToken = createMockJwt({
-      id: 'user_123',
+    const newRefreshToken = await signJwt({
+      id: verified.id,
       type: 'refresh',
-      exp: now + 30 * 24 * 60 * 60, // 30 days
-    });
+    }, '30d');
 
     return NextResponse.json({
       accessToken: newAccessToken,

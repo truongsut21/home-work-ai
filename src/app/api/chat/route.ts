@@ -1,9 +1,15 @@
 import { streamText, convertToModelMessages, UIMessage } from 'ai';
 import { chatModel } from '@/lib/ai';
+import { verifyApiAuth } from '@/lib/auth-server';
 import { SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/features/chat/constants/system-prompt';
 import { saveMessage } from '@/features/chat/services/save-message';
 
 export async function POST(req: Request) {
+  const authPayload = verifyApiAuth(req);
+  if (!authPayload) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+  }
+
   const { messages, conversationId } = await req.json() as { messages: UIMessage[], conversationId: string };
 
   // Save the incoming user message to the database

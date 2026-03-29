@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server';
-
-function createMockJwt(payload: any) {
-  // Tạo JWT giả (header.payload.signature) để vượt qua jwt-decode trên middleware
-  const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${base64Payload}.mock_signature_123`;
-}
+import { signJwt } from '@/lib/jwt';
 
 export async function POST(req: Request) {
   try {
@@ -15,20 +10,17 @@ export async function POST(req: Request) {
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '123456';
 
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      const now = Math.floor(Date.now() / 1000);
       
-      const accessToken = createMockJwt({
+      const accessToken = await signJwt({
         id: 'user_123',
         email,
         name: 'Admin User',
-        exp: now + 30 * 60, // 30 mins
-      });
+      }, '30m'); // Hết hạn trong 30 phút
 
-      const refreshToken = createMockJwt({
+      const refreshToken = await signJwt({
         id: 'user_123',
         type: 'refresh',
-        exp: now + 30 * 24 * 60 * 60, // 30 days
-      });
+      }, '30d'); // Hết hạn trong 30 ngày
 
       return NextResponse.json({
         accessToken,

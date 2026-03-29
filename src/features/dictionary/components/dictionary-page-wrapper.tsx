@@ -108,10 +108,6 @@ export default function DictionaryPageWrapper() {
               </span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64748B', fontWeight: 500 }}>
-              <span style={{ fontSize: 9, color: '#10B981' }}>●</span>
-              Cô Lành đang online
-            </div>
           </div>
 
           {/* Dictionary Content */}

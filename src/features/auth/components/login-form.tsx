@@ -1,87 +1,133 @@
 'use client';
 
-import React from 'react';
-import { Form, Input, Button, Card, Typography } from 'antd';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Button } from 'antd';
+import { LockOutlined, UserOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useAuth } from '../hooks/use-auth';
 import { LoginFormData } from '../schemas/auth.schema';
-
-const { Title, Text } = Typography;
+import styles from './login-form.module.css';
 
 export const LoginForm = () => {
   const { login, loading } = useAuth();
   const [form] = Form.useForm<LoginFormData>();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   const onFinish = (values: LoginFormData) => {
     login(values);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-4">
-      <Card 
-        className="w-full max-w-md shadow-2xl rounded-3xl border-0 overflow-hidden"
-        styles={{ body: { padding: '40px 32px' } }}
-      >
-        <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg mb-6 transform -rotate-6 hover:rotate-0 transition-transform duration-300">
-            <LockOutlined className="text-3xl text-white" />
+    <div className={styles.pageWrapper}>
+      {/* Animated orbs */}
+      <div className={styles.orb1} />
+      <div className={styles.orb2} />
+      <div className={styles.orb3} />
+
+      {/* Floating particles */}
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className={styles.particle}
+          style={{ '--i': i } as React.CSSProperties}
+        />
+      ))}
+
+      {/* Main card */}
+      <div className={`${styles.card} ${mounted ? styles.cardVisible : ''}`}>
+
+        {/* Left decorative panel */}
+        <div className={styles.leftPanel}>
+          <div className={styles.leftPanelContent}>
+            <div className={styles.brandLogo}>
+              <LockOutlined className={styles.brandIcon} />
+            </div>
+            <h1 className={styles.brandTitle}>Xin chào!</h1>
+            <p className={styles.brandSubtitle}>
+              Đăng nhập để truy cập vào hệ thống quản lý của bạn
+            </p>
+            <div className={styles.brandDots}>
+              <span className={`${styles.dot} ${styles.dotActive}`} />
+              <span className={styles.dot} />
+              <span className={styles.dot} />
+            </div>
           </div>
-          <Title level={2} className="!mb-2 !font-bold !text-gray-800 tracking-tight">
-            Chào mừng trở lại
-          </Title>
-          <Text type="secondary" className="text-sm">
-            Vui lòng đăng nhập vào tài khoản của bạn để tiếp tục
-          </Text>
         </div>
 
-        <Form
-          form={form}
-          name="login_form"
-          layout="vertical"
-          onFinish={onFinish}
-          size="large"
-          className="space-y-4"
-        >
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: 'Vui lòng nhập email!' },
-              { type: 'email', message: 'Email không đúng định dạng!' }
-            ]}
-          >
-            <Input 
-              prefix={<UserOutlined className="text-gray-400 mr-2" />} 
-              placeholder="Email" 
-              className="rounded-xl px-4 py-3 bg-gray-50 border-gray-200 hover:border-blue-400 focus:border-blue-500 focus:bg-white transition-all text-base"
-            />
-          </Form.Item>
+        {/* Right form panel */}
+        <div className={styles.rightPanel}>
+          <div className={styles.formHeader}>
+            <h2 className={styles.formTitle}>Đăng nhập</h2>
+            <p className={styles.formSubtitle}>Vui lòng nhập thông tin tài khoản</p>
+          </div>
 
-          <Form.Item
-            name="password"
-            rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu!' },
-              { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
-            ]}
+          <Form
+            form={form}
+            name="login_form"
+            layout="vertical"
+            onFinish={onFinish}
+            size="large"
+            className={styles.form}
           >
-            <Input.Password
-              prefix={<LockOutlined className="text-gray-400 mr-2" />}
-              placeholder="Mật khẩu"
-              className="rounded-xl px-4 py-3 bg-gray-50 border-gray-200 hover:border-blue-400 focus:border-blue-500 focus:bg-white transition-all text-base"
-            />
-          </Form.Item>
-
-          <Form.Item className="mt-8 mb-0">
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="w-full h-12 rounded-xl text-base font-semibold shadow-md hover:shadow-lg transition-all"
-              loading={loading}
+            {/* Email */}
+            <Form.Item
+              name="email"
+              className={styles.formItem}
+              rules={[
+                { required: true, message: 'Vui lòng nhập tài khoản!' },
+              ]}
             >
-              Đăng Nhập
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+              <Input
+                prefix={<UserOutlined className={styles.inputIcon} />}
+                placeholder="Địa chỉ Email"
+                className={styles.customInput}
+              />
+            </Form.Item>
+
+            {/* Password */}
+            <Form.Item
+              name="password"
+              className={styles.formItem}
+              rules={[
+                { required: true, message: 'Vui lòng nhập mật khẩu!' },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className={styles.inputIcon} />}
+                placeholder="Mật khẩu"
+                className={styles.customInput}
+              />
+            </Form.Item>
+
+            {/* Forgot password */}
+            <div className={styles.forgotRow}>
+              <a className={styles.forgotLink}>Quên mật khẩu?</a>
+            </div>
+
+            {/* Submit */}
+            <Form.Item className={styles.submitItem}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                className={styles.submitBtn}
+                icon={!loading ? <ArrowRightOutlined /> : undefined}
+                iconPosition="end"
+              >
+                {loading ? 'Đang xử lý...' : 'Đăng Nhập'}
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <p className={styles.footerText}>
+            © {new Date().getFullYear()} Hệ Thống Quản Lý. All rights reserved.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
