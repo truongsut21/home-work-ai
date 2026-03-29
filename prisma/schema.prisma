@@ -28,3 +28,18 @@ model Message {
   @@index([conversationId])
   @@map("messages")
 }
+
+model DictionaryEntry {
+  id            String   @id @default(cuid())
+  word          String   @unique // normalized lowercase
+  phonetic      String
+  meaning       String   @db.Text
+  example       String   @db.Text
+  grammarNotes  String[] @map("grammar_notes")
+  level         String   // "Easy" | "Intermediate" | "Hard"
+  createdAt     DateTime @default(now()) @map("created_at")
+  lookupCount   Int      @default(1) @map("lookup_count")
+
+  @@index([word])
+  @@map("dictionary_entries")
+}

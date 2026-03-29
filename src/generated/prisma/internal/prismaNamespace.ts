@@ -385,7 +385,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   Conversation: 'Conversation',
-  Message: 'Message'
+  Message: 'Message',
+  DictionaryEntry: 'DictionaryEntry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -401,7 +402,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "conversation" | "message"
+    modelProps: "conversation" | "message" | "dictionaryEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -553,6 +554,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DictionaryEntry: {
+      payload: Prisma.$DictionaryEntryPayload<ExtArgs>
+      fields: Prisma.DictionaryEntryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DictionaryEntryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DictionaryEntryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>
+        }
+        findFirst: {
+          args: Prisma.DictionaryEntryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DictionaryEntryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>
+        }
+        findMany: {
+          args: Prisma.DictionaryEntryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>[]
+        }
+        create: {
+          args: Prisma.DictionaryEntryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>
+        }
+        createMany: {
+          args: Prisma.DictionaryEntryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DictionaryEntryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>[]
+        }
+        delete: {
+          args: Prisma.DictionaryEntryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>
+        }
+        update: {
+          args: Prisma.DictionaryEntryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>
+        }
+        deleteMany: {
+          args: Prisma.DictionaryEntryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DictionaryEntryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DictionaryEntryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>[]
+        }
+        upsert: {
+          args: Prisma.DictionaryEntryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DictionaryEntryPayload>
+        }
+        aggregate: {
+          args: Prisma.DictionaryEntryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDictionaryEntry>
+        }
+        groupBy: {
+          args: Prisma.DictionaryEntryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DictionaryEntryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DictionaryEntryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DictionaryEntryCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -611,6 +686,21 @@ export const MessageScalarFieldEnum = {
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const DictionaryEntryScalarFieldEnum = {
+  id: 'id',
+  word: 'word',
+  phonetic: 'phonetic',
+  meaning: 'meaning',
+  example: 'example',
+  grammarNotes: 'grammarNotes',
+  level: 'level',
+  createdAt: 'createdAt',
+  lookupCount: 'lookupCount'
+} as const
+
+export type DictionaryEntryScalarFieldEnum = (typeof DictionaryEntryScalarFieldEnum)[keyof typeof DictionaryEntryScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -674,6 +764,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -773,6 +877,7 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   conversation?: Prisma.ConversationOmit
   message?: Prisma.MessageOmit
+  dictionaryEntry?: Prisma.DictionaryEntryOmit
 }
 
 /* Types for Logging */

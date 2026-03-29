@@ -52,7 +52,8 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Conversation: 'Conversation',
-  Message: 'Message'
+  Message: 'Message',
+  DictionaryEntry: 'DictionaryEntry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -90,6 +91,21 @@ export const MessageScalarFieldEnum = {
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const DictionaryEntryScalarFieldEnum = {
+  id: 'id',
+  word: 'word',
+  phonetic: 'phonetic',
+  meaning: 'meaning',
+  example: 'example',
+  grammarNotes: 'grammarNotes',
+  level: 'level',
+  createdAt: 'createdAt',
+  lookupCount: 'lookupCount'
+} as const
+
+export type DictionaryEntryScalarFieldEnum = (typeof DictionaryEntryScalarFieldEnum)[keyof typeof DictionaryEntryScalarFieldEnum]
 
 
 export const SortOrder = {

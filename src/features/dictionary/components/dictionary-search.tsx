@@ -6,7 +6,6 @@ import { SearchOutlined, ThunderboltOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-const SUGGESTIONS = ['serendipity', 'ephemeral', 'resilience', 'ambiguous', 'procrastinate', 'ubiquitous'];
 
 // ── Teal palette for dictionary ──────────────────────────────
 const TEAL = '#0D9488';
@@ -166,57 +165,6 @@ export default function DictionarySearch({ onSearch, isLoading }: DictionarySear
           <SearchOutlined />
           {isLoading ? 'Cô Lành đang tra...' : 'Tra cứu'}
         </button>
-      </div>
-
-      {/* Quick suggestions */}
-      <div
-        style={{
-          background: '#FFFFFF',
-          borderRadius: 14,
-          padding: '16px 18px',
-          border: '1px solid #E2E8F0',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <ThunderboltOutlined style={{ color: '#F59E0B', fontSize: 12 }} />
-          <Text style={{ fontSize: 12, fontWeight: 600, color: '#64748B' }}>
-            Gợi ý từ khó:
-          </Text>
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {SUGGESTIONS.map((word) => (
-            <button
-              key={word}
-              onClick={() => handleSuggestion(word)}
-              disabled={isLoading}
-              style={{
-                padding: '5px 13px',
-                borderRadius: 20,
-                border: '1.5px solid #E2E8F0',
-                background: '#F8FAFC',
-                color: '#475569',
-                fontSize: 12,
-                fontWeight: 500,
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.18s ease',
-              }}
-              onMouseEnter={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.background = TEAL_LIGHT;
-                  e.currentTarget.style.borderColor = TEAL;
-                  e.currentTarget.style.color = TEAL;
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#F8FAFC';
-                e.currentTarget.style.borderColor = '#E2E8F0';
-                e.currentTarget.style.color = '#475569';
-              }}
-            >
-              {word}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { generateObject } from 'ai';
 import { chatModel } from '@/lib/ai';
 import { DictionarySchema } from '@/features/dictionary/schemas/dictionary.schema';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
@@ -10,6 +11,32 @@ export async function POST(req: Request) {
       return Response.json({ error: 'No word provided to look up.' }, { status: 400 });
     }
 
+    const normalizedWord = word.trim().toLowerCase();
+
+    // ── 1. Check DB cache first ──────────────────────────────────────────────
+    const cached = await prisma.dictionaryEntry.findUnique({
+      where: { word: normalizedWord },
+    });
+
+    if (cached) {
+      // Increment lookup count (fire-and-forget)
+      prisma.dictionaryEntry.update({
+        where: { word: normalizedWord },
+        data: { lookupCount: { increment: 1 } },
+      }).catch(() => {});
+
+      return Response.json({
+        word: cached.word,
+        phonetic: cached.phonetic,
+        meaning: cached.meaning,
+        example: cached.example,
+        grammar_notes: cached.grammarNotes,
+        level: cached.level,
+        fromCache: true,
+      });
+    }
+
+    // ── 2. Not in DB → call AI ───────────────────────────────────────────────
     const result = await generateObject({
       model: chatModel,
       schema: DictionarySchema,
@@ -30,7 +57,21 @@ Field instructions:
 If "${word.trim()}" is not a real English word, still do your best to analyze it but mention it clearly in the meaning field.`,
     });
 
-    return Response.json(result.object);
+    const obj = result.object;
+
+    // ── 3. Save to DB ────────────────────────────────────────────────────────
+    await prisma.dictionaryEntry.create({
+      data: {
+        word: normalizedWord,
+        phonetic: obj.phonetic,
+        meaning: obj.meaning,
+        example: obj.example,
+        grammarNotes: obj.grammar_notes,
+        level: obj.level,
+      },
+    });
+
+    return Response.json({ ...obj, fromCache: false });
   } catch (error) {
     console.error('[Dictionary API Error]', error);
     return Response.json(

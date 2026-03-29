@@ -39,6 +39,7 @@ export default function DictionaryPageWrapper() {
   return (
     <Layout style={{ minHeight: '100vh', background: '#F1F5F9' }}>
       <Sidebar
+        conversations={[]}
         activeConversationId={null}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
@@ -56,6 +57,7 @@ export default function DictionaryPageWrapper() {
         }}
       >
         <Content
+          className="page-fade-in"
           style={{
             height: '100vh',
             display: 'flex',

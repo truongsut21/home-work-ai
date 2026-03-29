@@ -28,72 +28,36 @@ interface Conversation {
 }
 
 interface SidebarProps {
+  conversations: Conversation[];
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
   onNewConversation: () => void;
+  onDeleteConversation?: (id: string) => void;
   isMobile?: boolean;
   mobileMenuOpen?: boolean;
   onCloseMobileMenu?: () => void;
-  refreshKey?: number;
-  newConversation?: any;
   /** When false, hides conversation panel (New Chat + history). Icon strip only. */
   showPanel?: boolean;
 }
 
 export default function Sidebar({
+  conversations,
   activeConversationId,
   onSelectConversation,
   onNewConversation,
+  onDeleteConversation,
   isMobile = false,
   mobileMenuOpen = false,
   onCloseMobileMenu,
-  refreshKey = 0,
-  newConversation,
   showPanel = true,
 }: SidebarProps) {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeNav, setActiveNav] = useState(0);
 
-  const fetchConversations = async () => {
-    try {
-      const res = await fetch('/api/conversations');
-      if (res.ok) {
-        const data = await res.json();
-        setConversations(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch conversations:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchConversations();
-  }, [refreshKey]);
-
-  useEffect(() => {
-    if (newConversation) {
-      setConversations((prev) => {
-        if (!prev.find((c) => c.id === newConversation.id)) {
-          return [newConversation, ...prev];
-        }
-        return prev;
-      });
-    }
-  }, [newConversation]);
-
   const handleDelete = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    try {
-      await fetch(`/api/conversations/${id}`, { method: 'DELETE' });
-      fetchConversations();
-      if (activeConversationId === id) {
-        onNewConversation();
-      }
-    } catch (error) {
-      console.error('Failed to delete conversation:', error);
-    }
+    onDeleteConversation?.(id);
   };
 
   // Prevent body scroll when mobile modal is open
@@ -405,36 +369,6 @@ export default function Sidebar({
               </div>
             </>
           )}
-
-          {/* Bottom actions */}
-          <div className="mobile-sidebar-footer">
-            <button className="mobile-footer-btn">
-              <SearchOutlined />
-              <span>Tìm kiếm</span>
-            </button>
-            <button className="mobile-footer-btn">
-              <SettingOutlined />
-              <span>Cài đặt</span>
-            </button>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                background: 'linear-gradient(135deg, #10B981, #34D399)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#FFFFFF',
-                fontWeight: 700,
-                fontSize: 14,
-                cursor: 'pointer',
-                flexShrink: 0,
-              }}
-            >
-              <span style={{ fontSize: 18 }}>🤦‍♂️</span>
-            </div>
-          </div>
         </div>
       </>
     );
@@ -442,77 +376,56 @@ export default function Sidebar({
 
   // ============ DESKTOP RENDER ============
   return (
-      <Sider
-        collapsible
-        collapsed={collapsed || !showPanel}
-        onCollapse={(c) => { if (showPanel) setCollapsed(c); }}
-        width={280}
-        collapsedWidth={60}
-        trigger={null}
-        style={{
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          background: 'var(--bg-sidebar)',
-          borderRight: '1px solid var(--border)',
-          zIndex: 100,
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{ display: 'flex', height: '100%' }}>
-          {/* Left icon strip */}
-          <div
-            style={{
-              width: 60,
-              background: 'var(--bg-primary)',
-              borderRight: showPanel ? '1px solid var(--border-light)' : 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              padding: '16px 0',
-              gap: 4,
-            }}
-          >
+    <Sider
+      collapsible
+      collapsed={collapsed || !showPanel}
+      onCollapse={(c) => { if (showPanel) setCollapsed(c); }}
+      width={280}
+      collapsedWidth={60}
+      trigger={null}
+      style={{
+        height: '100vh',
+        position: 'fixed',
+        left: 0, top: 0, bottom: 0,
+        background: 'var(--bg-sidebar)',
+        borderRight: '1px solid var(--border)',
+        zIndex: 100,
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ display: 'flex', height: '100%' }}>
+
+        {/* Left icon strip */}
+        <div
+          style={{
+            width: 60,
+            background: 'var(--bg-primary)',
+            borderRight: showPanel ? '1px solid var(--border-light)' : 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '16px 0',
+            gap: 4,
+          }}
+        >
           {/* Logo */}
           <div
-            className="bounce-in"
             style={{
-              width: 42,
-              height: 42,
-              borderRadius: 14,
+              width: 42, height: 42, borderRadius: 14,
               background: 'var(--accent-gradient)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 12,
-              boxShadow: 'var(--shadow-accent)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              position: 'relative',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 12, boxShadow: 'var(--shadow-accent)',
+              cursor: 'pointer', transition: 'all 0.3s ease', position: 'relative',
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.08) rotate(5deg)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
-            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.08) rotate(5deg)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; }}
           >
             <span style={{ fontSize: 20 }}>👩‍💻</span>
-            {/* Online dot */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: -1,
-                right: -1,
-                width: 12,
-                height: 12,
-                borderRadius: '50%',
-                background: '#10B981',
-                border: '2px solid var(--bg-primary)',
-              }}
-            />
+            <div style={{
+              position: 'absolute', bottom: -1, right: -1,
+              width: 12, height: 12, borderRadius: '50%',
+              background: '#10B981', border: '2px solid var(--bg-primary)',
+            }} />
           </div>
 
           {/* Nav icons */}
@@ -520,122 +433,44 @@ export default function Sidebar({
             <Tooltip key={i} title={nav.label} placement="right">
               <button
                 className={`nav-icon-btn ${getNavActive(nav.route) ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveNav(i);
-                  if (nav.route) router.push(nav.route);
-                }}
-                style={{
-                  animationDelay: `${i * 0.08}s`,
-                  position: 'relative',
-                }}
+                onClick={() => { setActiveNav(i); if (nav.route) router.push(nav.route); }}
+                style={{ animationDelay: `${i * 0.08}s`, position: 'relative' }}
               >
                 {nav.icon}
                 {nav.route === '/tu-dien' && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: 4,
-                      right: 4,
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      background: '#10B981',
-                      border: '1.5px solid var(--bg-primary)',
-                    }}
-                  />
+                  <span style={{
+                    position: 'absolute', top: 4, right: 4,
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: '#10B981', border: '1.5px solid var(--bg-primary)',
+                  }} />
                 )}
               </button>
             </Tooltip>
           ))}
 
-          {/* Bottom icons */}
-          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <Tooltip title="Tìm kiếm" placement="right">
-              <button className="nav-icon-btn">
-                <SearchOutlined />
-              </button>
-            </Tooltip>
-            <Tooltip title="Cài đặt" placement="right">
-              <button className="nav-icon-btn">
-                <SettingOutlined />
-              </button>
-            </Tooltip>
-            {/* User avatar */}
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                background: 'linear-gradient(135deg, #10B981, #34D399)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#FFFFFF',
-                fontWeight: 700,
-                fontSize: 14,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                marginTop: 4,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.08)';
-                e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.35)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <span style={{ fontSize: 18 }}>🤦‍♂️</span>
-            </div>
-          </div>
         </div>
 
-          {/* Right conversation panel — only when showPanel=true */}
-          {showPanel && !collapsed && (
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '16px 8px',
-                animation: 'slideInLeft 0.3s ease',
-                overflow: 'hidden',
-              }}
-            >
+        {/* Right conversation panel — only on chat page (showPanel=true) */}
+        {showPanel && !collapsed && (
+          <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            padding: '16px 8px', animation: 'slideInLeft 0.3s ease', overflow: 'hidden',
+          }}>
             {/* Header */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0 8px',
-                marginBottom: 6,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: 'var(--text-primary)',
-                }}
-              >
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '0 8px', marginBottom: 6,
+            }}>
+              <Text style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
                 Chat
               </Text>
               <Tooltip title="Tìm kiếm">
                 <button
                   style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 8,
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
+                    width: 30, height: 30, borderRadius: 8, border: 'none',
+                    background: 'transparent', color: 'var(--text-muted)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', transition: 'all 0.2s ease',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = 'var(--bg-sidebar-hover)';
@@ -657,19 +492,13 @@ export default function Sidebar({
               onClick={onNewConversation}
               block
               style={{
-                margin: '6px 4px 16px',
-                height: 42,
+                margin: '6px 4px 16px', height: 42,
                 borderRadius: 'var(--radius-full)',
                 background: 'var(--accent-gradient)',
-                border: 'none',
-                fontWeight: 600,
-                fontSize: 13.5,
+                border: 'none', fontWeight: 600, fontSize: 13.5,
                 boxShadow: 'var(--shadow-accent)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
@@ -680,24 +509,16 @@ export default function Sidebar({
                 e.currentTarget.style.boxShadow = 'var(--shadow-accent)';
               }}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                New Chat
-              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>New Chat</span>
             </Button>
 
             {/* Conversation List */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                paddingRight: 2,
-              }}
-            >
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingRight: 2 }}>
               {conversations.map((conv, i) => renderConversationItem(conv, i))}
             </div>
           </div>
         )}
+
       </div>
     </Sider>
   );

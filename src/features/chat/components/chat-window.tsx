@@ -101,7 +101,6 @@ function WelcomeScreen() {
 
       {/* Floating Avatar Orb */}
       <div
-        className="bounce-in"
         style={{
           width: 80,
           height: 80,

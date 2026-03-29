@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import Sidebar from './sidebar';
@@ -17,24 +17,42 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children, initialConversationId }: MainLayoutProps) {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(initialConversationId ?? null);
+  const [conversations, setConversations] = useState<{ id: string; title: string; createdAt: string; updatedAt: string }[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [newConversation, setNewConversation] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+
+  const hasFetched = useRef(false);
+
+  // Fetch conversations once on mount (useRef prevents StrictMode double-fetch)
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetch('/api/conversations')
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setConversations(data))
+      .catch(() => { });
+  }, []);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    const checkMobile = () => { setIsMobile(window.innerWidth <= 768); };
     checkMobile();
+    setMounted(true);
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Close mobile menu when switching to desktop
   useEffect(() => {
     if (!isMobile) setMobileMenuOpen(false);
   }, [isMobile]);
+
+  const handleDeleteConversation = async (id: string) => {
+    try {
+      await fetch(`/api/conversations/${id}`, { method: 'DELETE' });
+      setConversations((prev) => prev.filter((c) => c.id !== id));
+      if (activeConversationId === id) setActiveConversationId(null);
+    } catch { }
+  };
 
   const handleNewConversation = () => {
     setActiveConversationId(null);
@@ -48,38 +66,38 @@ export default function MainLayout({ children, initialConversationId }: MainLayo
 
   const handleConversationCreated = (id: string, title?: string) => {
     setActiveConversationId(id);
-    if (title) {
-      setNewConversation({
-        id,
-        title,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-    } else {
-      setRefreshKey((prev) => prev + 1);
-    }
+    const newEntry = {
+      id,
+      title: title ?? 'New Chat',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setConversations((prev) =>
+      prev.find((c) => c.id === id) ? prev : [newEntry, ...prev]
+    );
   };
 
   return (
     <Layout style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       <Sidebar
+        conversations={conversations}
         activeConversationId={activeConversationId}
-        refreshKey={refreshKey}
-        newConversation={newConversation}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
+        onDeleteConversation={handleDeleteConversation}
         isMobile={isMobile}
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={() => setMobileMenuOpen(false)}
       />
       <Layout
         style={{
-          marginLeft: isMobile ? 0 : 280,
-          transition: 'margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+          marginLeft: mounted ? (isMobile ? 0 : 280) : 280,
+          transition: mounted ? 'margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
           background: 'var(--bg-primary)',
         }}
       >
         <Content
+          className="page-fade-in"
           style={{
             height: '100vh',
             display: 'flex',
@@ -175,61 +193,6 @@ export default function MainLayout({ children, initialConversationId }: MainLayo
               >
                 Plus
               </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {/* Hide action pills on mobile, only show New Chat */}
-              {!isMobile && (
-                <>
-                  <button
-                    className="action-pill"
-                    style={{
-                      fontSize: 12,
-                      padding: '6px 14px',
-                      gap: 6,
-                    }}
-                  >
-                    ⚙️ Configuration
-                  </button>
-                  <button
-                    className="action-pill"
-                    style={{
-                      fontSize: 12,
-                      padding: '6px 14px',
-                      gap: 6,
-                    }}
-                  >
-                    📤 Share
-                  </button>
-                </>
-              )}
-              <button
-                onClick={handleNewConversation}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: isMobile ? '8px 14px' : '8px 18px',
-                  borderRadius: 'var(--radius-full)',
-                  border: 'none',
-                  background: 'var(--accent-gradient)',
-                  color: '#FFFFFF',
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.25s ease',
-                  boxShadow: 'var(--shadow-accent)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 6px 24px rgba(59, 91, 254, 0.35)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-accent)';
-                }}
-              >
-                New Chat ✨
-              </button>
             </div>
           </div>
 
