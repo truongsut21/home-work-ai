@@ -216,7 +216,7 @@ function FuelPriceTable({ prices, updatedAt }: { prices: FuelPrice[]; updatedAt?
             fontWeight: 600,
           }}
         >
-          ⛽ Cập nhật: {updatedAt}
+          ⛽ Cập nhật: {updatedAt?.replace(/^\d{2}:\d{2}\s*ngày\s*/, '')}
         </div>
       )}
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
