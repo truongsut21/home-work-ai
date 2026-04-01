@@ -132,7 +132,7 @@ export default function GiaXangPage() {
           </div>
 
           {/* Chat area */}
-          <FuelChatWindow messages={messages as any} isLoading={isLoading} />
+          <FuelChatWindow messages={messages as any} isLoading={isLoading} onSend={sendMessage} />
           <FuelChatInput onSend={sendMessage} isLoading={isLoading} />
         </Content>
       </Layout>

@@ -54,6 +54,7 @@ interface UIMessageRaw {
 interface FuelChatWindowProps {
   messages: UIMessageRaw[];
   isLoading: boolean;
+  onSend: (message: string) => void;
 }
 
 /* ─── helpers ─── */
@@ -265,14 +266,12 @@ function FuelPriceTable({ prices, updatedAt }: { prices: FuelPrice[]; updatedAt?
 }
 
 /* ─────────────────────────── WELCOME SCREEN ─────────────────────────── */
-function FuelWelcomeScreen() {
+function FuelWelcomeScreen({ onSend }: { onSend: (message: string) => void }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
   const suggestions = [
     { text: 'Giá xăng hôm nay bao nhiêu?', emoji: '⛽' },
-    { text: 'Xăng RON 95 giá bao nhiêu?', emoji: '💰' },
-    { text: 'So sánh giá xăng với lần trước', emoji: '📊' },
   ];
 
   return (
@@ -332,12 +331,16 @@ function FuelWelcomeScreen() {
         {suggestions.map((s, i) => (
           <div
             key={i}
+            role="button"
+            tabIndex={0}
+            onClick={() => onSend(s.text)}
+            onKeyDown={(e) => e.key === 'Enter' && onSend(s.text)}
             style={{
               padding: '12px 20px',
               background: '#FFFFFF',
               border: '1px solid var(--border)',
               borderRadius: 16,
-              cursor: 'default',
+              cursor: 'pointer',
               fontSize: 13.5,
               fontWeight: 500,
               color: 'var(--text-primary)',
@@ -413,7 +416,7 @@ function FuelMessageBubble({ message }: { message: UIMessageRaw }) {
 }
 
 /* ─────────────────────────── MAIN CHAT WINDOW ─────────────────────────── */
-export default function FuelChatWindow({ messages, isLoading }: FuelChatWindowProps) {
+export default function FuelChatWindow({ messages, isLoading, onSend }: FuelChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -421,7 +424,7 @@ export default function FuelChatWindow({ messages, isLoading }: FuelChatWindowPr
   }, [messages, isLoading]);
 
   if (messages.length === 0) {
-    return <FuelWelcomeScreen />;
+    return <FuelWelcomeScreen onSend={onSend} />;
   }
 
   return (
