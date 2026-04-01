@@ -14,6 +14,7 @@ import {
   AppstoreOutlined,
   EllipsisOutlined,
   CloseOutlined,
+  DashboardOutlined,
 } from '@ant-design/icons';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -79,6 +80,7 @@ export default function Sidebar({
   const navIcons = [
     { icon: <MessageOutlined />, label: 'Chat', route: '/' },
     { icon: <BookOutlined />, label: 'Từ điển Cô Lành', route: '/tu-dien' },
+    { icon: <DashboardOutlined />, label: 'Giá xăng', route: '/gia-xang' },
   ];
 
   const getNavActive = (route: string | null) => {

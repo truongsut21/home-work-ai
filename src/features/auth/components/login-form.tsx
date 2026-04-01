@@ -116,7 +116,7 @@ export const LoginForm = () => {
                 loading={loading}
                 className={styles.submitBtn}
                 icon={!loading ? <ArrowRightOutlined /> : undefined}
-                iconPosition="end"
+                iconPlacement="end"
               >
                 {loading ? 'Đang xử lý...' : 'Đăng Nhập'}
               </Button>
