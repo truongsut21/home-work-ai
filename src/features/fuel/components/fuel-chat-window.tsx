@@ -11,6 +11,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const { Title, Text } = Typography;
 
@@ -93,6 +94,62 @@ const TOOL_LABELS: Record<string, { label: string; icon: React.ReactNode; color:
   },
 };
 
+/* ─── Collapsible JSON viewer ─── */
+function JsonCollapsible({ label, data, borderColor }: { label: string; data: unknown; borderColor: string }) {
+  const [open, setOpen] = useState(false);
+
+  if (data == null) return null;
+
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((v) => !v)}
+        onKeyDown={(e) => e.key === 'Enter' && setOpen((v) => !v)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          cursor: 'pointer',
+          padding: '6px 10px',
+          borderRadius: 8,
+          background: `${borderColor}08`,
+          border: `1px solid ${borderColor}30`,
+          userSelect: 'none',
+          transition: 'background 0.15s ease',
+        }}
+      >
+        <span style={{ fontSize: 10, color: borderColor, transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+          ▶
+        </span>
+        <Text style={{ fontSize: 11.5, fontWeight: 600, color: borderColor }}>
+          {label}
+        </Text>
+      </div>
+      {open && (
+        <pre
+          style={{
+            margin: '6px 0 0 0',
+            padding: '10px 12px',
+            background: '#1E293B',
+            color: '#E2E8F0',
+            borderRadius: 10,
+            fontSize: 11,
+            lineHeight: 1.5,
+            overflowX: 'auto',
+            maxHeight: 240,
+            overflowY: 'auto',
+            border: `1px solid ${borderColor}25`,
+          }}
+        >
+          {JSON.stringify(data, null, 2)}
+        </pre>
+      )}
+    </div>
+  );
+}
+
 /* ─────────────────────────── TOOL CALL CARD ─────────────────────────── */
 function ToolCallCard({ part }: { part: ToolPart }) {
   const toolName = getToolName(part);
@@ -118,7 +175,7 @@ function ToolCallCard({ part }: { part: ToolPart }) {
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: (done && output) || errored ? 10 : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <div
           style={{
             width: 32,
@@ -149,118 +206,14 @@ function ToolCallCard({ part }: { part: ToolPart }) {
         </div>
       </div>
 
-      {/* Fuel prices table */}
-      {done && output && 'prices' in output && (
-        <FuelPriceTable
-          prices={(output as { prices: FuelPrice[] }).prices}
-          updatedAt={(output as { updatedAt?: string }).updatedAt}
-        />
-      )}
+      {/* Input & Output collapsible */}
+      <JsonCollapsible label="📥 Input (tham số đầu vào)" data={part.input} borderColor="#3B5BFE" />
+      <JsonCollapsible
+        label={errored ? '❌ Output (lỗi)' : '📤 Output (kết quả)'}
+        data={errored ? (part.errorText ?? part.output) : part.output}
+        borderColor={errored ? '#EF4444' : '#16A34A'}
+      />
 
-      {/* Discord send result */}
-      {done && output && 'sentContent' in output && (
-        <div
-          style={{
-            background: '#F0FDF4',
-            border: '1px solid #BBF7D0',
-            borderRadius: 12,
-            padding: '12px 14px',
-          }}
-        >
-          <Text style={{ fontSize: 12, fontWeight: 600, color: '#16A34A', display: 'block', marginBottom: 6 }}>
-            ✅ Đã gửi lên Discord:
-          </Text>
-          <Text style={{ fontSize: 12, color: '#374151', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-            {(output as { sentContent: string }).sentContent}
-          </Text>
-        </div>
-      )}
-
-      {/* Error */}
-      {errored && (
-        <div
-          style={{
-            background: '#FEF2F2',
-            border: '1px solid #FCA5A5',
-            borderRadius: 12,
-            padding: '10px 14px',
-          }}
-        >
-          <Text style={{ fontSize: 12, color: '#DC2626' }}>
-            ❌ {part.errorText ?? 'Đã xảy ra lỗi'}
-          </Text>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ─────────────────────────── FUEL PRICE TABLE ─────────────────────────── */
-function FuelPriceTable({ prices, updatedAt }: { prices: FuelPrice[]; updatedAt?: string }) {
-  return (
-    <div
-      style={{
-        background: '#FFFFFF',
-        borderRadius: 12,
-        overflow: 'hidden',
-        border: '1px solid #E2E8F0',
-      }}
-    >
-      {updatedAt && (
-        <div
-          style={{
-            padding: '8px 14px',
-            background: 'linear-gradient(135deg, #3B5BFE 0%, #7C3AED 100%)',
-            color: '#FFFFFF',
-            fontSize: 11,
-            fontWeight: 600,
-          }}
-        >
-          ⛽ Cập nhật: {updatedAt?.replace(/^\d{2}:\d{2}\s*ngày\s*/, '')}
-        </div>
-      )}
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
-        <thead>
-          <tr style={{ background: '#F8FAFC' }}>
-            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748B', fontWeight: 600, borderBottom: '1px solid #E2E8F0' }}>
-              Mặt hàng
-            </th>
-            <th style={{ padding: '8px 12px', textAlign: 'right', color: '#64748B', fontWeight: 600, borderBottom: '1px solid #E2E8F0' }}>
-              Giá (đ/lít)
-            </th>
-            <th style={{ padding: '8px 12px', textAlign: 'right', color: '#64748B', fontWeight: 600, borderBottom: '1px solid #E2E8F0' }}>
-              Tăng/Giảm
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {prices.map((item) => {
-            const changeNum = parseInt(item.change.replace(/[^\d-]/g, ''), 10);
-            const isDown = changeNum < 0;
-            const isUp = changeNum > 0;
-            return (
-              <tr key={item.index} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                <td style={{ padding: '10px 12px', fontWeight: 500, color: '#1E293B' }}>
-                  {item.name}
-                </td>
-                <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#0F172A' }}>
-                  {item.price}
-                </td>
-                <td
-                  style={{
-                    padding: '10px 12px',
-                    textAlign: 'right',
-                    fontWeight: 600,
-                    color: isDown ? '#16A34A' : isUp ? '#DC2626' : '#64748B',
-                  }}
-                >
-                  {isDown ? '▼' : isUp ? '▲' : ''} {item.change}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
     </div>
   );
 }
@@ -408,7 +361,7 @@ function FuelMessageBubble({ message }: { message: UIMessageRaw }) {
           }}
           className="fuel-chat-markdown"
         >
-          {isUser ? textParts : <ReactMarkdown>{textParts}</ReactMarkdown>}
+          {isUser ? textParts : <ReactMarkdown remarkPlugins={[remarkGfm]}>{textParts}</ReactMarkdown>}
         </div>
       )}
     </div>
@@ -446,6 +399,15 @@ export default function FuelChatWindow({ messages, isLoading, onSend }: FuelChat
         .fuel-chat-markdown li { margin: 2px 0; }
         .fuel-chat-markdown strong { font-weight: 700; }
         .fuel-chat-markdown em { font-style: italic; }
+        .fuel-chat-markdown table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+        .fuel-chat-markdown thead th {
+          background: linear-gradient(135deg, #3B5BFE 0%, #7C3AED 100%);
+          color: #fff; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px;
+        }
+        .fuel-chat-markdown thead th:not(:first-child) { text-align: right; }
+        .fuel-chat-markdown tbody td { padding: 8px 12px; border-bottom: 1px solid #F1F5F9; color: #1E293B; }
+        .fuel-chat-markdown tbody td:not(:first-child) { text-align: right; font-weight: 600; }
+        .fuel-chat-markdown tbody tr:hover { background: #F8FAFC; }
       `}</style>
       {messages.map((msg) => (
         <FuelMessageBubble key={msg.id} message={msg} />
