@@ -49,9 +49,9 @@ export default function FuelChatInput({ onSend, isLoading }: FuelChatInputProps)
             gap: 10,
             background: '#FFFFFF',
             borderRadius: 20,
-            border: `1.5px solid ${isFocused ? 'rgba(255, 107, 107, 0.4)' : 'var(--border)'}`,
+            border: `1.5px solid ${isFocused ? 'rgba(8, 137, 250, 0.4)' : 'var(--border)'}`,
             boxShadow: isFocused
-              ? '0 8px 32px rgba(255, 107, 107, 0.1), 0 0 0 3px rgba(255, 107, 107, 0.06)'
+              ? '0 8px 32px rgba(8, 137, 250, 0.1), 0 0 0 3px rgba(8, 137, 250, 0.06)'
               : '0 4px 20px rgba(0, 0, 0, 0.04)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             padding: '12px 14px 12px 20px',
