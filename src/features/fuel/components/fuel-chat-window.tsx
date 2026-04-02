@@ -96,7 +96,7 @@ const TOOL_LABELS: Record<string, { label: string; icon: React.ReactNode; color:
 
 /* ─── Collapsible JSON viewer ─── */
 function JsonCollapsible({ label, data, borderColor }: { label: string; data: unknown; borderColor: string }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   if (data == null) return null;
 
@@ -109,7 +109,7 @@ function JsonCollapsible({ label, data, borderColor }: { label: string; data: un
         onKeyDown={(e) => e.key === 'Enter' && setOpen((v) => !v)}
         style={{
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: 'column',
           gap: 6,
           cursor: 'pointer',
           padding: '6px 10px',
@@ -120,32 +120,31 @@ function JsonCollapsible({ label, data, borderColor }: { label: string; data: un
           transition: 'background 0.15s ease',
         }}
       >
-        <span style={{ fontSize: 10, color: borderColor, transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-          ▶
-        </span>
-        <Text style={{ fontSize: 11.5, fontWeight: 600, color: borderColor }}>
-          {label}
-        </Text>
+        <div>
+          <Text style={{ fontSize: 11.5, fontWeight: 600, color: borderColor }}>
+            {label}
+          </Text>
+        </div>
+        {open && (
+          <pre
+            style={{
+              margin: '6px 0 0 0',
+              padding: '10px 12px',
+              background: '#1E293B',
+              color: '#E2E8F0',
+              borderRadius: 10,
+              fontSize: 11,
+              lineHeight: 1.5,
+              overflowX: 'auto',
+              maxHeight: 240,
+              overflowY: 'auto',
+              border: `1px solid ${borderColor}25`,
+            }}
+          >
+            {JSON.stringify(data, null, 2)}
+          </pre>
+        )}
       </div>
-      {open && (
-        <pre
-          style={{
-            margin: '6px 0 0 0',
-            padding: '10px 12px',
-            background: '#1E293B',
-            color: '#E2E8F0',
-            borderRadius: 10,
-            fontSize: 11,
-            lineHeight: 1.5,
-            overflowX: 'auto',
-            maxHeight: 240,
-            overflowY: 'auto',
-            border: `1px solid ${borderColor}25`,
-          }}
-        >
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      )}
     </div>
   );
 }
@@ -401,7 +400,7 @@ export default function FuelChatWindow({ messages, isLoading, onSend }: FuelChat
         .fuel-chat-markdown em { font-style: italic; }
         .fuel-chat-markdown table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }
         .fuel-chat-markdown thead th {
-          background: linear-gradient(135deg, #3B5BFE 0%, #7C3AED 100%);
+          background: #3B5BFE;
           color: #fff; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px;
         }
         .fuel-chat-markdown thead th:not(:first-child) { text-align: right; }
